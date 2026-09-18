@@ -37,6 +37,31 @@ export default function ProtectedPage() {
     } finally {
       setLoading(false);
     }
+
+async function loadProfile() {
+    const token = getToken()
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    
+    try {
+      
+      // TODO : ativar loading.
+      setLoading(true);
+      
+      const response = await api.get("/users/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      setUser(response.data);
+    } catch (error) {
+      setError("Erro ao carregar perfil");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleLogout() {
