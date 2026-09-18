@@ -9,35 +9,6 @@ export default function ProtectedPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  async function loadProfile() {
-    const token = getToken();
-
-    if (!token) {
-      removeToken();
-      navigate("/login");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await api.get("/users/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setUser(response.data.user);
-    } catch (err) {
-      const message = err.response?.data?.message || "Sessão expirada. Faça login novamente.";
-      setError(message);
-      removeToken();
-      navigate("/login");
-    } finally {
-      setLoading(false);
-    }
-
 async function loadProfile() {
     const token = getToken()
     if (!token) {
