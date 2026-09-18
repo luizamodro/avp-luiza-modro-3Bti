@@ -10,19 +10,40 @@ export default function Register() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleRegister(event) {
-    // TODO: impedir o comportamento padrão do formulário.
-    event.preventDefault(); // Preparação mínima: a página não recarrega durante a aula.
-    // TODO: limpar mensagens anteriores de erro e sucesso.
-    // TODO: validar se name, email e password foram preenchidos.
-    // TODO: ativar loading.
-    // TODO: chamar POST /auth/register usando api.post.
-    // TODO: enviar name, email e password no body.
-    // TODO: mostrar mensagem de sucesso se o cadastro funcionar.
-    // TODO: limpar os campos após cadastro.
-    // TODO: mostrar mensagem de erro se o backend retornar erro.
-    // TODO: desativar loading no final.
-    // Dica: use try/catch/finally para separar sucesso, erro e loading.
+  async function handleRegister(event) {
+    event.preventDefault();
+
+    const nameValue = name.trim();
+    const emailValue = email.trim();
+    const passwordValue = password.trim();
+
+    if (!nameValue || !emailValue || !passwordValue) {
+      setError("Preencha nome, email e senha para continuar.");
+      setSuccess("");
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      const response = await api.post("/auth/register", {
+        name: nameValue,
+        email: emailValue,
+        password: passwordValue,
+      });
+
+      setSuccess(response.data?.message || "Usuário cadastrado com sucesso.");
+      setName("");
+      setEmail("");
+      setPassword("");
+    } catch (err) {
+      const message = err.response?.data?.message || err.response?.data?.mensagem || "Erro ao cadastrar usuário.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

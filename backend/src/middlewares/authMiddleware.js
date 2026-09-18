@@ -1,34 +1,40 @@
-// Estas dependências serão usadas quando os TODOs forem completados em aula.
 import jwt from "jsonwebtoken";
 import prisma from "../prismaClient.js";
 
 export default async function authMiddleware(req, res, next) {
-  // Middleware é uma função que fica no meio do caminho entre a requisição
-  // e a resposta. O Express executa esta função antes da rota protegida.
-  //
-  // Aqui vamos verificar se o usuário está logado.
-  // Se estiver logado, chamamos next() e deixamos a rota continuar.
-  // Se não estiver, enviamos uma resposta e bloqueamos o acesso.
-  //
-  // O middleware funciona como um porteiro: ele pode deixar a requisição
-  // continuar, bloquear, modificar ou adicionar informações nela.
-  // Se ele não chamar next(), a função final da rota não será executada.
+  const authHeader = req.headers.authorization;
 
-  // TODO: ler o header Authorization
+  if (!authHeader) {
+    return res.status(401).json({ message: "Token ausente" });
+  }
 
-  // TODO: verificar se o token foi enviado
+  const parts = authHeader.split(" ");
 
-  // TODO: separar a palavra Bearer do token
+  if (parts.length !== 2 || parts[0] !== "Bearer" || !parts[1]) {
+    return res.status(401).json({ message: "Token inválido" });
+  }
 
-  // TODO: validar o token usando jwt.verify
+  const token = parts[1];
 
-  // TODO: buscar o usuário no banco pelo id que veio no token
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  // TODO: adicionar o usuário na requisição usando req.user
+    const usuario = await prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
 
-  // TODO: chamar next() para liberar a rota protegida
+    if (!usuario) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
 
-  return res.status(501).json({
-    message: "Middleware de autenticação ainda será implementado pelos alunos",
-  });
+    req.user = {
+      id: usuario.id,
+      name: usuario.name,
+      email: usuario.email,
+    };
+
+    return next();
+  } catch (error) {
+    return res.status(401).json({ message: "Token inválido" });
+  }
 }
